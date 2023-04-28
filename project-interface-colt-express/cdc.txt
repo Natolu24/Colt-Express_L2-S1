@@ -1,0 +1,185 @@
+Liste des classe :
+Principale : Game
+Ecran de Jeu : Pile, PlayersIcons, Log, Train, Arrows, Manche, Cards, Draw
+Système de Jeu : Players, Wagons
+
+Interface du jeu : (3x3)
+<Top : 30%>   | Pile         : 15% | PlayersIcons : 50% | Log           : 35% |
+<Mid : 40%>   | Arrows(left) : 10% | Train        : 80% | Arrows(right) : 10% |
+<Bot : 30%>   | Manche       : 30% | Cards        : 60% | Draw          : 10% |
+
+Déroulement du Jeu :
+5 manches :
+- Choix aléatoire d'une carte manche (parmis une liste contenant toute les cartes)
+- Attribution d'un jeu de cartes random à chaque joueur
+- Boucle pour chaque tour de programmation, en tenant compte des effets spéciaux de la manche
+- Fin de la programmation, boucle sur la pile des cartes pour faire le tour d'action
+- Fin de manche : si c'est une manche spécial, provoqué l'effet
+- On change le premier joueur au suivant
+- Fin
+
+Note :
+- Soit on a un deck de cartes pour chaque joueur, soit des cartes globales pour tous mais dans ce cas la,
+il faudra donc dans le code toujours les associer au bon joueur
+- Ptet dans toute les Class qui vont constament changer, ajoutter une fonction "redraw" qui redessinne tout avec les changement ?
+- les items sont des tuples de 2 éléments : (type, valeur)
+- A voir comment on fais en sorte que chaque manche s'execute sans problème,
+(bloqué les boutons ptet, de sorte que le joueur ne fasse rien)
+- Déroulement de la phase action grâce aux flèches, on peut essayer de gardé une trace de "l'historique" des actions
+effectuées pour qu'on puisse revenir en arrière avec la flèche gauche (possible)
+- Pendant la phase Action, 2 modes : historique et action, pendant historique lorsqu'on revient en arrière
+on peut pas rejoueur un coup différent, contrairement lorsqu'on jour au tour actuel en mode action
+- Ptet faire 2 fonctions globale (dans Game) qui active/désactive les buttons lorsqu'il y aura besoin
+
+
+Class : Game
+- Initialisation de tout les éléments de l'écran
+- Est la classe parent de tout les éléments du jeu, donc va être celui qui organise tout le jeu
+- Et donc s'occupe du déroulement du jeu
+- Grand __init__ pour l'initialisation du jeu
+
+    Attributs :
+    - (toute les différentes partie de l'écran) - chaque objets de l'écran
+    - (liste des joueurs) - les joueurs
+
+    Méthodes :
+    - initInterface(self) - initialise la structure de l'interface de base, avec tout les parties
+    - initSystem(self) - initialise les variables de base du système
+    - preparation(self) - préparation requise en début de manche
+    - chooseCard(self) - choisir une carte pour le joueur actuel
+    - beginAction(self) - déroulement de la phase action
+    - changePlayerOrder(self) - changement du premier joueur
+    - 
+
+
+Class : Pile
+- Initialisation graphique
+- Garde en compte la pile de cartes
+- Et va s'occupé du déroulement de la phase action
+
+    Attributs :
+    - pile - la liste de toute les cartes
+
+    Méthodes :
+    - addCard(self, card, hidden) - Ajoute la carte dans la pile (et l'affiche si hidden n'est pas à True)
+    - actionStart(self) - Execute le tour d'action, carte par carte
+    - action(self, card) - Fait l'action de la carte donné
+
+
+Class : PlayersIcons
+- Initialisation graphique
+- Icones de chaque joueurs, mais étant des boutons utiles lorsqu'on a besoin de visé un certain joueur 
+- Bien sur permet d'afficher les infos de chaque joueurs
+
+    Attributs :
+    - (tout les joueurs) - tout les objets de Players (utilise la liste de Game)
+
+    Méthodes :
+    - 
+
+
+Class : Log
+- Initialisation graphique
+- Permet de garder un log de toutes les actions effectué
+- On peut aussi faire en sorte d'afficher des messages d'aide si jamais il y a besoin
+
+    Attributs :
+
+    Méthodes :
+    - addLog(self, message) - ajoute le message donné en paramètre dans le log
+
+
+Class : Train
+- Initialisation graphique
+- Va être celui qui organise tout les wagons
+
+    Attributs :
+    - train - liste de tout les objets Wagons, formant le train
+    - current - liste/tuple de 3 éléments comprenant les indices des 3 wagons visibles a l'écran
+
+    Méthodes :
+    - check(self, direction) - vérifie si il y a encore des wagons à afficher dans cette direction (à utilisé avec les flèches, avec move())
+    - refresh(self) -  redessine le train (méthode appelé lorsque lui même a changé)
+
+
+Class : Arrows
+- Initialisation graphique
+- Les flèches de directions, 2 types gauche/droite
+- Pourra ptet servir autre que bouger dans le wagon, aux actions qui demandent une direction
+
+    Attributs :
+    - train - le train
+
+    Méthodes :
+    - move(self) - va bouger le train, donc "current" et appelle refresh ensuite
+
+Class : Manche
+- Initialisation graphique
+- A chaque début de manche en prépare une aléatoirement
+
+    Attributs :
+    - type - liste de chaque type de "tour" possible
+    - manche - la manche actuelle
+    - isEvent - bouléen, True lorsqu'un événement spécial est la
+    - nmb - nombre de fois qu'un joueur va posé une carte dans la manche actuel (nombre de tour de jeu)
+
+    Méthodes :
+    - makeRandom(self) - crée une manche aléatoirement
+    - event(self) - effectue l'event actuel
+    - clear(self) - nettoie manche, avant de préparé la suivante
+    - preparation(self) - prépare la nouvelle manche
+
+
+Class : Cards
+- Initialisation graphique
+- Va gardé en compte chaque deck de cartes des joueurs
+- Tout en s'occupant de la distributions des cartes et autres
+
+    Attributs :
+    - (deck de cartes) - liste de toutes les cartes actions, pour chaque joueurs
+
+    Méthodes :
+    - clean(self) - a la fin d'une manche, enleve toute les cartes restantes dans les mains des joueurs
+    - giveOne(self) - prend une carte du deck et l'enleve de celui-ci
+    - giveRandomHand(self) - donne une liste de cartes random pour le joueur
+    - drawCards(self) - pioche 3 cartes
+    - preparation(self) - prépare les cartes de chaque joueurs pour la nouvelle manche
+
+
+Class : Draw
+- Initialisation graphique
+- Seulement un bouton qui appel "drawCards" de "Cards"
+
+    Attributs :
+    - 
+
+    Méthodes :
+    - 
+
+
+Class : Players
+- Sert surtout a stocké les données des joueurs
+
+    Attributs :
+    - name - nom du perso
+    - money - l'argent actuelle du perso
+    - items - les items qu'a le perso (chaque item a une valeur)
+    - nmbBullets - nombre de balles restantes
+    - malus - nombre de "malus" qu'a le joueur (lorsque tiré dessus, affecte le nombre de carte pioché)
+
+    Méthodes :
+    - 
+
+
+Class : Wagons
+- Garde les données de chaque wagon
+- Et des méthodes essentiels a la manipulations des données des wagons
+
+    Attributs :
+    - people - liste des joueurs dans le wagon
+    - items - liste des items dans le wagon
+
+    Méthodes :
+    - add(self, type, objet) ajoute l'objet dans ce wagon
+    - remove(self, type, objet) supprime l'objet dans ce wagon
+    - refresh(self) redessine le wagon (méthode appelé lorsque lui même a changé)
